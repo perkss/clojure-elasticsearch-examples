@@ -3,9 +3,14 @@ services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.0.0
     environment:
-      - cluster.name=playground-cluster
+      - node.name=elasticsearch1
+      - cluster.name=docker-cluster
+      - cluster.initial_master_nodes=elasticsearch1
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms256M -Xmx256M"
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - network.host=_eth0_
     ulimits:
       memlock:
         soft: -1

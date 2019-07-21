@@ -9,6 +9,9 @@ its UI at `http://localhost:5601`.
 
 By running the command in the root directory `docker-compose up -d`
 
+If you have errors please check the logs `docker-compose logs` or `docker logs [container-id]`, I saw `exit code 78` and 
+had to increase the `docker daemons` memory size. 
+
 ## Building our app into a Docker image
 
 Now lets get ready to build our docker image by building an uberjar first and then creating a docker image from our 
