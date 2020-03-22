@@ -6,10 +6,8 @@
     [tick.alpha.api :as t]
     [tick.core :as tick])
   (:gen-class)
-  (:import (org.elasticsearch.common.settings Settings)
-           (org.elasticsearch.client RestHighLevelClient RequestOptions RestClient)
+  (:import (org.elasticsearch.client RestHighLevelClient RequestOptions RestClient)
            (org.apache.http HttpHost)
-           (org.elasticsearch.client.indices CreateIndexRequest)
            (org.elasticsearch.action ActionListener)
            (org.elasticsearch.action.index IndexRequest IndexResponse)
            (org.elasticsearch.action.get GetRequest GetResponse)))
@@ -42,22 +40,10 @@
    ^ActionListener listener]
   (.indexAsync client request request-options listener))
 
-(defn index-builder
-  [name settings]
-  (-> (CreateIndexRequest. name)
-      ;; (.settings settings) add these back in correctly.
-      ))
-
 (defn rest-client ^RestHighLevelClient
-  [^String host ^Integer port]
-  (-> (RestHighLevelClient. (RestClient/builder (into-array HttpHost [(HttpHost. host port "http")])))))
-
-(defn settings-builder
-  [^Integer shards ^Integer replicas]
-  (-> (Settings/builder)
-      (.put "number_of_shards" shards)
-      (.put "number_of_replicas" replicas)
-      (.build)))
+  ([^String host ^Integer port] (rest-client host port "http"))
+  ([^String host ^Integer port ^String scheme]
+   (-> (RestHighLevelClient. (RestClient/builder (into-array HttpHost [(HttpHost. host port scheme)]))))))
 
 (defn -main [& args]
   (log/infof "Example Elastic Search App Running!")
