@@ -11,6 +11,8 @@
                                                     javax.jms/jms
                                                     com.sun.jmdk/jmxtools
                                                     com.sun.jmx/jmxri]]
+                 [org.testcontainers/testcontainers "1.13.0"]
+                 [org.testcontainers/elasticsearch "1.13.0"]
                  [tick "0.4.23-alpha"]]
   :repl-options {:init-ns clojure-elasticsearch-examples.elastic-tutorial}
   :main ^:skip-aot clojure-elasticsearch-examples.elastic-tutorial

@@ -2,33 +2,25 @@
   (:require
     [clojure.tools.logging :as log]
     [clojure.data.json :as json]
-    [clojure-elasticsearch-examples.get-requests :as get-requests]
+    [clojure-elasticsearch-examples.requests :as requests]
     [tick.alpha.api :as t]
     [tick.core :as tick])
   (:gen-class)
-  (:import (org.elasticsearch.common.settings Settings$Builder Settings)
+  (:import (org.elasticsearch.common.settings Settings)
            (org.elasticsearch.client RestHighLevelClient RequestOptions RestClient)
            (org.apache.http HttpHost)
            (org.elasticsearch.client.indices CreateIndexRequest)
            (org.elasticsearch.action ActionListener)
-           (org.elasticsearch.action.index IndexRequest)
-           (org.elasticsearch.common.xcontent XContentType)
-           (org.elasticsearch.action.get GetRequest)))
+           (org.elasticsearch.action.index IndexRequest IndexResponse)
+           (org.elasticsearch.action.get GetRequest GetResponse)))
 
-(defn index-request ^IndexRequest
-  [^String index ^String id ^String json]
-  (-> (IndexRequest. index)
-      (.id id)
-      (.source json XContentType/JSON)))
-
-; think aobut generic request here
-(defn execute
+(defn execute ^IndexResponse
   [^RestHighLevelClient client
    ^IndexRequest request
    ^RequestOptions request-options]
   (.index client request request-options))
 
-(defn execute-get
+(defn execute-get ^GetResponse
   [^RestHighLevelClient client
    ^GetRequest request
    ^RequestOptions request-options]
@@ -58,10 +50,9 @@
       ))
 
 (defn rest-client ^RestHighLevelClient
-  [^String host]
-  (-> (RestHighLevelClient. (RestClient/builder (into-array HttpHost [(HttpHost. "localhost", 9200, "http") (HttpHost. "localhost", 9201, "http")])))))
+  [^String host ^Integer port]
+  (-> (RestHighLevelClient. (RestClient/builder (into-array HttpHost [(HttpHost. host port "http")])))))
 
-;; Probably should do the .. method as more pure
 (defn settings-builder
   [^Integer shards ^Integer replicas]
   (-> (Settings/builder)
@@ -73,18 +64,18 @@
   (log/infof "Example Elastic Search App Running!")
   (let [
         index "posts"
-        client (rest-client "http://localhost:9200")
-        request-1 (index-request index "1" (json/write-str
-                                             {:user      "kimchy"
-                                              :post-date (t/format (tick/now))
-                                              :message   "trying out Elasticsearch"}))
-        request-2 (index-request index "2" (json/write-str
-                                             {:user      "perkss"
-                                              :post-date (t/format (tick/now))
-                                              :message   "Clojure and Elasticsearch"}))
+        client (rest-client "localhost" 9200)
+        request-1 (requests/index-request index "1" (json/write-str
+                                                      {:user      "kimchy"
+                                                       :post-date (t/format (tick/now))
+                                                       :message   "trying out Elasticsearch"}))
+        request-2 (requests/index-request index "2" (json/write-str
+                                                      {:user      "perkss"
+                                                       :post-date (t/format (tick/now))
+                                                       :message   "Clojure and Elasticsearch"}))
         response (execute client request-1 RequestOptions/DEFAULT)
-        response-2 (execute-async client request-2 RequestOptions/DEFAULT (action-listener))
-        get-response (execute-get client (get-requests/get-request index "1") RequestOptions/DEFAULT)]
+        response-2 (execute-async client request-2 RequestOptions/DEFAULT (action-listener))]
     (log/infof "Result of indexing document synchronous is %s" response)
     (log/infof "Result of indexing document asynchronous is %s" response-2)
-    (log/infof "Get request response is %s" get-response)))
+    (log/infof "Get request doc 1 response is %s" (execute-get client (requests/get-request index "1") RequestOptions/DEFAULT))
+    (log/infof "Get request doc 2 response is %s" (execute-get client (requests/get-request index "2") RequestOptions/DEFAULT))))
