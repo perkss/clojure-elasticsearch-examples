@@ -35,8 +35,7 @@
       (log/error "Failed: " exception))))
 
 (defn execute-async
-  [
-   ^RestHighLevelClient client
+  [^RestHighLevelClient client
    ^IndexRequest request
    ^RequestOptions request-options
 
@@ -62,8 +61,7 @@
 
 (defn -main [& args]
   (log/infof "Example Elastic Search App Running!")
-  (let [
-        index "posts"
+  (let [index "posts"
         client (rest-client "localhost" 9200)
         request-1 (requests/index-request index "1" (json/write-str
                                                       {:user      "kimchy"
